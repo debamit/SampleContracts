@@ -21,7 +21,7 @@ contract CrowdFundTest is DSTest {
     event Cancel(uint256 id);
 
     function setUp() public {
-        address creator = address(1234);
+        // address creator = address(1234);
         vm.label(address(this), "CrowdFundTestContract");
 
         token = new MockERC20("CrowdTestToken", "TT1", 18);
@@ -112,20 +112,20 @@ contract CrowdFundTest is DSTest {
         fund.pledge(1, 2 ether);
     }
 
-    // function testFuzz_launch(
-    //     uint256 _goalAmount,
-    //     uint32 _startTs,
-    //     uint32 _endTs
-    // ) public {
-    //     vm.assume(_goalAmount > 0);
-    //     vm.assume(_startTs < _endTs);
-    //     vm.expectEmit(true, true, true, true);
-    //     emit Launch(1, address(this), _goalAmount, _startTs, _endTs);
-    //     fund.launch(_goalAmount, _startTs, _endTs);
-    // }
+    function testFuzz_launch(
+        uint256 _goalAmount,
+        uint32 _startTs,
+        uint32 _endTs
+    ) public {
+        vm.assume(_goalAmount > 0);
+        vm.assume(_startTs < _endTs);
+        vm.expectEmit(true, true, true, true);
+        emit Launch(1, address(this), _goalAmount, _startTs, _endTs);
+        fund.launch(_goalAmount, _startTs, _endTs);
+    }
 
-    // function testFuzz_amount(uint256 _amount) public {
-    //     vm.assume(_amount > 0);
-    //     assertEq(_amount, _amount);
-    // }
+    function testFuzz_amount(uint256 _amount) public {
+        vm.assume(_amount == 0);
+        assertEq(_amount, _amount);
+    }
 }
