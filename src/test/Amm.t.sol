@@ -63,11 +63,27 @@ contract AmmTest is DSTest {
         token0.approve(address(amm), 10);
         token1.approve(address(amm), 1);
         amm.addLiquidity(10, 1);
+        uint256 originalShares = amm.getShares(address(this));
+        console.log("initial share count", originalShares);
         token0.approve(address(amm), 100);
         token1.approve(address(amm), 10);
         amm.addLiquidity(100, 10);
         (uint256 reserve0, uint256 reserve1) = amm.getReserves();
+        uint256 shares = amm.getShares(address(this));
+        console.log("shares after adding liquidity", shares);
         assertEq(reserve0, 110);
         assertEq(reserve1, 11);
+    }
+
+    function test_RemoveLiquidity() public {
+        token0.approve(address(amm), 110);
+        token1.approve(address(amm), 11);
+        amm.addLiquidity(110, 11);
+        uint256 originalShares = amm.getShares(address(this));
+        console.log("initial share count", originalShares);
+        amm.removeLiquidity(originalShares);
+        (uint256 reserve0, uint256 reserve1) = amm.getReserves();
+        assertEq(reserve0, 0);
+        assertEq(reserve1, 0);
     }
 }

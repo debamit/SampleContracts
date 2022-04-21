@@ -38,7 +38,6 @@ contract Amm {
     }
 
     function addLiquidity(uint256 _token0Amount, uint256 _token1Amount) public {
-        console.log("before transfer");
         token0.transferFrom(msg.sender, address(this), _token0Amount);
         token1.transferFrom(msg.sender, address(this), _token1Amount);
 
@@ -119,11 +118,22 @@ contract Amm {
         return (reserve0, reserve1);
     }
 
-    // function swap(
-    //     address _fromToken,
-    //     uint256 _amountInputToken,
-    //     address _toToken
-    // ) public returns (uint256) {
-    //     return 42;
-    // }
+    function getShares(address _lpAddress) public returns (uint256) {
+        return balanceOf[_lpAddress];
+    }
+
+    function removeLiquidity(uint256 _shares) external {
+        uint256 amount0 = (_shares * reserve0) / totalSupply;
+        uint256 amount1 = (_shares * reserve1) / totalSupply;
+
+        _burn(msg.sender, _shares);
+        _update(reserve0 - amount0, reserve1 - amount1);
+
+        if (amount0 > 0) {
+            token0.transfer(msg.sender, amount0);
+        }
+        if (amount1 > 0) {
+            token1.transfer(msg.sender, amount1);
+        }
+    }
 }
