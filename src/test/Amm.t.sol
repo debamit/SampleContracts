@@ -86,4 +86,13 @@ contract AmmTest is DSTest {
         assertEq(reserve0, 0);
         assertEq(reserve1, 0);
     }
+
+    function test_Swap() public {
+        token0.approve(address(amm), 10000);
+        token1.approve(address(amm), 10000);
+        amm.addLiquidity(110, 11);
+        uint256 amountOut = amm.swap(address(token1), 11);
+        console.log("Tokens recieved for 1 token1", amountOut);
+        assert(true);
+    }
 }

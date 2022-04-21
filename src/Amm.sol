@@ -114,11 +114,11 @@ contract Amm {
         return x <= y ? x : y;
     }
 
-    function getReserves() public returns (uint256, uint256) {
+    function getReserves() public view returns (uint256, uint256) {
         return (reserve0, reserve1);
     }
 
-    function getShares(address _lpAddress) public returns (uint256) {
+    function getShares(address _lpAddress) public view returns (uint256) {
         return balanceOf[_lpAddress];
     }
 
@@ -135,5 +135,54 @@ contract Amm {
         if (amount1 > 0) {
             token1.transfer(msg.sender, amount1);
         }
+    }
+
+    function swap(address _tokenIn, uint256 _amountIn)
+        external
+        returns (uint256 amountOut)
+    {
+        require(
+            _tokenIn == address(token0) || _tokenIn == address(token1),
+            "invalid token"
+        );
+
+        bool isToken0 = _tokenIn == address(token0);
+
+        (
+            ERC20 tokenIn,
+            ERC20 tokenOut,
+            uint256 reserveIn,
+            uint256 reserveOut
+        ) = isToken0
+                ? (token0, token1, reserve0, reserve1)
+                : (token1, token0, reserve1, reserve0);
+
+        tokenIn.transferFrom(msg.sender, address(this), _amountIn);
+        uint256 amountIn = tokenIn.balanceOf(address(this)) - reserveIn;
+
+        /*
+        How much dy for dx?
+
+        xy = k
+        (x + dx)(y - dy) = k
+        y - dy = k / (x + dx)
+        y - k / (x + dx) = dy
+        y - xy / (x + dx) = dy
+        (yx + ydx - xy) / (x + dx) = dy
+        ydx / (x + dx) = dy
+        */
+        // 0.3% fee
+        uint256 amountInWithFee = (amountIn * 997) / 1000;
+        uint256 amountOut = (reserveOut * amountInWithFee) /
+            (reserveIn + amountInWithFee);
+
+        console.log("Amount of tokens recieved", amountOut);
+        (uint256 res0, uint256 res1) = isToken0
+            ? (reserveIn + amountIn, reserveOut - amountOut)
+            : (reserveOut - amountOut, reserveIn + amountIn);
+
+        _update(res0, res1);
+        // return amountOut;
+        tokenOut.transfer(msg.sender, amountOut);
     }
 }
